@@ -1,12 +1,9 @@
-# SAM
-SAM  Core
+# SAM_GEM
 
+##SAM tool to produce .GEM file
 
-Panel-> | PlanarBoundary3D-> | Face3D-> | Polygon3D 
------------- | ------------- | ------------- | -------------
-*SAM.Analytical* | *SAM.Analytical* | *SAM.Geometry* | *SAM.Geometry*
-PlanarBoundary3D  | BoundaryEdges2DLoop | Edge IClosed2D+Plane | Closed
-N/A  | BoundaryEdge2D | ExternalEdge IClosed2D+Plane | Planar
-N/A  | N/A| InternalEdge IClosed2D+Plane | Segmentable
-
-Test
+GEM is
+A *.gem file is a VE native file type. 
+It exports geometry and site location information only. 
+It can be used for transferring graphical information between VE projects. 
+* [how to import](https://help.iesve.com/ve2018/dxf___gem_files.htm)
