@@ -1,6 +1,6 @@
 # SAM_GEM
 
-##SAM tool to produce .GEM file
+## SAM tool to produce .GEM file
 
 GEM is
 A *.gem file is a VE native file type. 
