@@ -2,7 +2,7 @@
 using System;
 using System.Drawing;
 
-namespace SAM.Analytical.Grasshopper
+namespace SAM.Analytical.Grasshopper.GEM
 {
     public class AssemblyInfo : GH_AssemblyInfo
     {
@@ -45,7 +45,7 @@ namespace SAM.Analytical.Grasshopper
         {
             get
             {
-                return new Guid("c5f76f4c-7e82-442d-bf49-72359823631b");
+                return new Guid("1ae4f9c8-1b85-4407-814b-a74ada02d160");
             }
         }
 

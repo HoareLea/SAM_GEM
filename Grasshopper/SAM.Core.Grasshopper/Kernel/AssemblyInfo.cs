@@ -45,7 +45,7 @@ namespace SAM.Core.Grasshopper
         {
             get
             {
-                return new Guid("07387a31-0d77-4b4d-9198-c09428db56d8");
+                return new Guid("2ebace7b-7fe8-4a10-8534-64beaaad6454");
             }
         }
 

@@ -71,39 +71,13 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\GH_SAMComponent.cs" />
-    <Compile Include="Classes\GooAddress.cs" />
-    <Compile Include="Classes\GooLocation.cs" />
-    <Compile Include="Classes\GooRelationCluster.cs" />
-    <Compile Include="Classes\GooSAMObject.cs" />
-    <Compile Include="Component\SAMCoreExplode.cs" />
-    <Compile Include="Component\SAMCoreCreateLocation.cs" />
-    <Compile Include="Component\SAMCoreFilter.cs" />
-    <Compile Include="Component\SAMCoreGetNames.cs" />
-    <Compile Include="Component\SAMCoreAddObjects.cs" />
-    <Compile Include="Component\SAMCoreRelatedObjects.cs" />
-    <Compile Include="Component\SAMCoreToList.cs" />
-    <Compile Include="Component\SAMCoreToCsv.cs" />
-    <Compile Include="Component\SAMCoreToJson.cs" />
-    <Compile Include="Component\SAMCoreFromJson.cs" />
-    <Compile Include="Component\SAMCoreAbout.cs" />
-    <Compile Include="Component\SAMCoreGetValue.cs" />
-    <Compile Include="Interfaces\IGooSAMObject.cs" />
     <Compile Include="Kernel\AssemblyInfo.cs" />
-    <Compile Include="Kernel\AssemblyPriority.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Query\DataTree.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\SAM\SAM.Core\SAM.Core.csproj">
-      <Project>{1C86B9AC-81B3-41D8-BA48-321F28AB94F4}</Project>
-      <Name>SAM.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -132,7 +106,11 @@
     <None Include="Resources\SAM_Get.Filterpng.png" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Classes\" />
+    <Folder Include="Component\" />
     <Folder Include="Convert\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Query\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\SAM_Names.png" />
