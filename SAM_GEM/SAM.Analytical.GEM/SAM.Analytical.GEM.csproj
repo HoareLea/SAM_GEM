@@ -70,7 +70,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SAM.Core.GEM\SAM.Core.GEM.csproj">
       <Project>{1c86b9ac-81b3-41d8-ba48-321f28ab94f4}</Project>
-      <Name>SAM.Core</Name>
+      <Name>SAM.Core.GEM</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

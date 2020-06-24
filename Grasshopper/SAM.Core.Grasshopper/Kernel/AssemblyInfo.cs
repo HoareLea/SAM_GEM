@@ -2,7 +2,7 @@
 using System;
 using System.Drawing;
 
-namespace SAM.Core.Grasshopper
+namespace SAM.Core.Grasshopper.GEM
 {
     public class AssemblyInfo : GH_AssemblyInfo
     {
