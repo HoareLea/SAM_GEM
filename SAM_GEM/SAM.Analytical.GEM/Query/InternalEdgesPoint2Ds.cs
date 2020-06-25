@@ -5,9 +5,9 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Query
     {
-        public static List<List<Point2D>> InternalEdgesPoint2Ds(this Panel panel)
+        public static List<List<Point2D>> InternalEdgesPoint2Ds(this Panel panel, double tolerance = Core.Tolerance.Distance)
         {
-            return Geometry.GEM.Query.InternalEdgesPoint2Ds(panel.GetFace3D());
+            return Geometry.GEM.Query.InternalEdgesPoint2Ds(panel.GetFace3D(), tolerance);
         }
     }
 }

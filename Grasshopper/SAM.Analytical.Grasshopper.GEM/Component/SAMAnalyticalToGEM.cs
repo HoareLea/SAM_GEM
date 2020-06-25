@@ -46,6 +46,8 @@ namespace SAM.Analytical.GEM.Grasshopper
             index = inputParamManager.AddTextParameter("path_", "path_", "GEM file path including extension .gem", GH_ParamAccess.item, path);
             inputParamManager[index].Optional = true;
 
+            index = inputParamManager.AddNumberParameter("_tolerance_", "_tolerance_", "Tolerance", GH_ParamAccess.item, Tolerance.Distance);
+
             inputParamManager.AddBooleanParameter("_run_", "_run_", "Run, set to True to export GEM to given path", GH_ParamAccess.item, false);
         }
 
@@ -67,7 +69,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         protected override void SolveInstance(IGH_DataAccess dataAccess)
         {
             bool run = false;
-            if (!dataAccess.GetData<bool>(2, ref run))
+            if (!dataAccess.GetData(3, ref run))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 dataAccess.SetData(1, false);
@@ -75,9 +77,6 @@ namespace SAM.Analytical.GEM.Grasshopper
             }
             if (!run)
                 return;
-
-            string path = null;
-            dataAccess.GetData<string>(1, ref path);
 
             AdjacencyCluster adjacencyCluster = null;
             if (!dataAccess.GetData(0, ref adjacencyCluster) || adjacencyCluster == null)
@@ -87,7 +86,18 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
             }
 
-            string gEM = Convert.ToGEM(adjacencyCluster);
+            string path = null;
+            dataAccess.GetData<string>(1, ref path);
+
+            double tolerance = Tolerance.Distance;
+            if (!dataAccess.GetData(2, ref tolerance))
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
+                dataAccess.SetData(1, false);
+                return;
+            }
+
+            string gEM = Convert.ToGEM(adjacencyCluster, tolerance);
 
             if (!string.IsNullOrWhiteSpace(path))
                 System.IO.File.WriteAllText(path, gEM);

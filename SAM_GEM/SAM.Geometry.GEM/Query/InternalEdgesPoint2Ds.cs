@@ -7,7 +7,7 @@ namespace SAM.Geometry.GEM
 {
     public static partial class Query
     {
-        public static List<List<Point2D>> InternalEdgesPoint2Ds(this Face3D face3D)
+        public static List<List<Point2D>> InternalEdgesPoint2Ds(this Face3D face3D, double tolerance = Core.Tolerance.Distance)
         {
             if (face3D == null)
                 return null;
@@ -28,6 +28,7 @@ namespace SAM.Geometry.GEM
                 if (point2Ds == null || point2Ds.Count < 3)
                     continue;
 
+                point2Ds.ForEach(x => x.Round(tolerance));
                 result.Add(point2Ds);
             }
 

@@ -8,7 +8,7 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Convert
     {
-        public static string ToGEM(this AdjacencyCluster adjacencyCluster)
+        public static string ToGEM(this AdjacencyCluster adjacencyCluster, double tolerance = Core.Tolerance.Distance)
         {
             if (adjacencyCluster == null)
                 return null;
@@ -61,7 +61,7 @@ namespace SAM.Analytical.GEM
         }
 
 
-        private static string ToGEM(this IEnumerable<Panel> panels, string name, GEMType gEMType)
+        private static string ToGEM(this IEnumerable<Panel> panels, string name, GEMType gEMType, double tolerance = Core.Tolerance.Distance)
         {
             if (panels == null)
                 return null;
@@ -75,7 +75,7 @@ namespace SAM.Analytical.GEM
             result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), 16711690);
             result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Name(), name);
 
-            List<Point3D> point3Ds = Query.ExternalEdgePoint3Ds(panels)?.ToList();
+            List<Point3D> point3Ds = Query.ExternalEdgePoint3Ds(panels, tolerance)?.ToList();
             if (point3Ds != null || point3Ds.Count > 2)
             {
                 result += string.Format("{0} {1}\n", point3Ds.Count, panels.Count());
@@ -84,11 +84,11 @@ namespace SAM.Analytical.GEM
 
                 foreach (Panel panel in panels)
                 {
-                    List<Point3D> externalEdge = Query.ExternalEdgePoint3Ds(panel)?.ToList();
+                    List<Point3D> externalEdge = Query.ExternalEdgePoint3Ds(panel, tolerance)?.ToList();
                     if (externalEdge == null)
                         continue;
 
-                    List<List<Point2D>> holes = Query.InternalEdgesPoint2Ds(panel);
+                    List<List<Point2D>> holes = Query.InternalEdgesPoint2Ds(panel, tolerance);
                     if (holes == null)
                         holes = new List<List<Point2D>>();
 
@@ -108,7 +108,7 @@ namespace SAM.Analytical.GEM
                             if (apertureType == ApertureType.Undefined)
                                 continue;
 
-                            HashSet<Point2D> point2Ds = aperture.ExternalEdgePoint2Ds();
+                            HashSet<Point2D> point2Ds = aperture.ExternalEdgePoint2Ds(tolerance);
                             if (point2Ds == null || point2Ds.Count == 0)
                                 continue;
 

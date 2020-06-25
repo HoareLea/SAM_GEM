@@ -5,12 +5,12 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Query
     {
-        public static HashSet<Point3D> ExternalEdgePoint3Ds(this Panel panel)
+        public static HashSet<Point3D> ExternalEdgePoint3Ds(this Panel panel, double tolerance = Core.Tolerance.Distance)
         {
-            return Geometry.GEM.Query.ExternalEdgePoint3Ds(panel?.GetFace3D());
+            return Geometry.GEM.Query.ExternalEdgePoint3Ds(panel?.GetFace3D(), tolerance);
         }
 
-        public static HashSet<Point3D> ExternalEdgePoint3Ds(this IEnumerable<Panel> panels)
+        public static HashSet<Point3D> ExternalEdgePoint3Ds(this IEnumerable<Panel> panels, double tolerance = Core.Tolerance.Distance)
         {
             if (panels == null)
                 return null;
@@ -18,7 +18,7 @@ namespace SAM.Analytical.GEM
             HashSet<Point3D> result = new HashSet<Point3D>();
             foreach (Panel panel in panels)
             {
-                HashSet<Point3D> point3Ds = panel?.ExternalEdgePoint3Ds();
+                HashSet<Point3D> point3Ds = panel?.ExternalEdgePoint3Ds(tolerance);
                 if (point3Ds == null || point3Ds.Count == 0)
                     continue;
 

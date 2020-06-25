@@ -7,7 +7,7 @@ namespace SAM.Geometry.GEM
 {
     public static partial class Query
     {
-        public static HashSet<Point2D> ExternalEdgePoint2Ds(this Face3D face3D)
+        public static HashSet<Point2D> ExternalEdgePoint2Ds(this Face3D face3D, double tolerance = Core.Tolerance.Distance)
         {
             if (face3D == null)
                 return null;
@@ -24,8 +24,11 @@ namespace SAM.Geometry.GEM
             if (point2Ds.Count == 0)
                 return result;
 
-            foreach (Point2D point2D in point2Ds)
-                result.Add(point2D);
+            for(int i=0; i < point2Ds.Count; i++)
+            {
+                point2Ds[i].Round(tolerance);
+                result.Add(point2Ds[i]);
+            }
 
             return result;
         }
