@@ -29,7 +29,7 @@ namespace SAM.Analytical.GEM
                         name = space.Guid.ToString();
 
 
-                    string result_space = ToGEM(panels, name, GEMType.Space);
+                    string result_space = ToGEM(panels, name, GEMType.Space, tolerance);
                     if (result_space == null)
                         continue;
 
@@ -45,7 +45,7 @@ namespace SAM.Analytical.GEM
             {
                 for(int i=0; i < panels_Shading.Count; i++)
                 {
-                    string result_shade = ToGEM(new Panel[] { panels_Shading[i] }, string.Format("SHADE {0}", i + 1), GEMType.Shade);
+                    string result_shade = ToGEM(new Panel[] { panels_Shading[i] }, string.Format("SHADE {0}", i + 1), GEMType.Shade, tolerance);
                     if (result_shade == null)
                         continue;
 
@@ -67,13 +67,33 @@ namespace SAM.Analytical.GEM
                 return null;
 
             string result = string.Empty;
+
+            int layer = -1;
+            int colourRGB = -1;
+            int colour = -1;
+            switch(gEMType)
+            {
+                case GEMType.Shade:
+                    layer = 64;
+                    colourRGB = 65280;
+                    colour = 0;
+                    break;
+                case GEMType.Space:
+                    layer = 1;
+                    colourRGB = 16711690;
+                    colour = 1;
+                    break;
+                default:
+                    return null;
+            }
+
             
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Layer(), 1);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Colour(), 1);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Layer(), layer);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Colour(), colour);
             result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Category(), 1);
             result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Type(), (int)gEMType);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), 16711690);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Name(), name);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), colourRGB);
+            result += string.Format("{0} {1}\n", Core.GEM.Query.ParameterName_Name(), name);
 
             List<Point3D> point3Ds = Query.ExternalEdgePoint3Ds(panels, tolerance)?.ToList();
             if (point3Ds != null || point3Ds.Count > 2)
@@ -131,7 +151,7 @@ namespace SAM.Analytical.GEM
                         }
                     }
 
-                    result += string.Format("{0} {1}\n", externalEdge.Count, string.Join(" ", externalEdge.ConvertAll(x => point3Ds.IndexOf(x))));
+                    result += string.Format("{0} {1}\n", externalEdge.Count, string.Join(" ", externalEdge.ConvertAll(x => point3Ds.IndexOf(x) + 1)));
 
                     result += string.Format("{0}\n", windows.Count + doors.Count + holes.Count);
 
