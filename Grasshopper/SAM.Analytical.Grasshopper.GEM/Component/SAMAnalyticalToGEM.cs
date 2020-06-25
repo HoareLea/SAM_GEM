@@ -27,7 +27,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         public SAMAnalyticalToGEM()
           : base("ToGEM", "ToGEM",
               "Writes SAM objects to GEM file ",
-              "SAM", "Analytical")
+              "SAM", "GEM")
         {
         }
 

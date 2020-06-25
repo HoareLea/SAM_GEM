@@ -20,7 +20,7 @@ namespace SAM.Analytical.GEM
             {
                 foreach(Space space in spaces)
                 {
-                    List<Panel> panels = adjacencyCluster.GetRelatedObjects<Panel>(spaces);
+                    List<Panel> panels = adjacencyCluster.GetRelatedObjects<Panel>(space);
                     if (panels == null || panels.Count == 0)
                         continue;
 
