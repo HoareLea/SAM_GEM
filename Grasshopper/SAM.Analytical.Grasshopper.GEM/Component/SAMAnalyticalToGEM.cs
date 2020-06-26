@@ -97,7 +97,7 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
             }
 
-            string gEM = Convert.ToGEM(adjacencyCluster, tolerance);
+            string gEM = Convert.ToGEM(adjacencyCluster, Tolerance.MacroDistance, tolerance);
 
             if (!string.IsNullOrWhiteSpace(path))
                 System.IO.File.WriteAllText(path, gEM);

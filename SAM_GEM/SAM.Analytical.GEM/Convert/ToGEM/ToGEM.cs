@@ -8,19 +8,22 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Convert
     {
-        public static string ToGEM(this AdjacencyCluster adjacencyCluster, double tolerance = Core.Tolerance.Distance)
+        public static string ToGEM(this AdjacencyCluster adjacencyCluster, double silverSpacing = Core.Tolerance.MacroDistance, double tolerance = Core.Tolerance.Distance)
         {
             if (adjacencyCluster == null)
                 return null;
 
             string result = null;
 
-            List<Space> spaces = adjacencyCluster.GetSpaces();
+            AdjacencyCluster adjacencyCluster_Temp = new AdjacencyCluster(adjacencyCluster);
+            adjacencyCluster_Temp = adjacencyCluster_Temp.UpdateNormals(silverSpacing, tolerance);
+
+            List<Space> spaces = adjacencyCluster_Temp.GetSpaces();
             if(spaces != null && spaces.Count != 0)
             {
                 foreach(Space space in spaces)
-                {
-                    List<Panel> panels = adjacencyCluster.GetRelatedObjects<Panel>(space);
+                {                   
+                    List<Panel> panels = adjacencyCluster_Temp.GetRelatedObjects<Panel>(space);
                     if (panels == null || panels.Count == 0)
                         continue;
 
@@ -40,7 +43,7 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            List<Panel> panels_Shading = adjacencyCluster.GetShadingPanels();
+            List<Panel> panels_Shading = adjacencyCluster_Temp.GetShadingPanels();
             if(panels_Shading != null)
             {
                 for(int i=0; i < panels_Shading.Count; i++)
