@@ -15,15 +15,12 @@ namespace SAM.Analytical.GEM
 
             string result = null;
 
-            AdjacencyCluster adjacencyCluster_Temp = new AdjacencyCluster(adjacencyCluster);
-            adjacencyCluster_Temp = adjacencyCluster_Temp.UpdateNormals(silverSpacing, tolerance);
-
-            List<Space> spaces = adjacencyCluster_Temp.GetSpaces();
+            List<Space> spaces = adjacencyCluster.GetSpaces();
             if(spaces != null && spaces.Count != 0)
             {
                 foreach(Space space in spaces)
                 {                   
-                    List<Panel> panels = adjacencyCluster_Temp.GetRelatedObjects<Panel>(space);
+                    List<Panel> panels = adjacencyCluster.UpdateNormals(space, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
                         continue;
 
@@ -43,7 +40,7 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            List<Panel> panels_Shading = adjacencyCluster_Temp.GetShadingPanels();
+            List<Panel> panels_Shading = adjacencyCluster.GetShadingPanels();
             if(panels_Shading != null)
             {
                 for(int i=0; i < panels_Shading.Count; i++)
