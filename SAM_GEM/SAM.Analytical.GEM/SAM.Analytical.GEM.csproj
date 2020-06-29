@@ -78,7 +78,6 @@
     <Compile Include="Enums\GEMType.cs" />
     <Compile Include="Enums\OpeningType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Query\ExternalEdgePoint2Ds.cs" />
     <Compile Include="Query\ExternalEdgePoint3Ds.cs" />
     <Compile Include="Query\InternalEdgesPoint2Ds.cs" />
   </ItemGroup>

@@ -10,6 +10,11 @@ namespace SAM.Analytical.GEM
             return Geometry.GEM.Query.ExternalEdgePoint3Ds(panel?.GetFace3D(), tolerance);
         }
 
+        public static HashSet<Point3D> ExternalEdgePoint3Ds(this Aperture aperture, double tolerance = Core.Tolerance.Distance)
+        {
+            return Geometry.GEM.Query.ExternalEdgePoint3Ds(aperture?.GetFace3D(), tolerance);
+        }
+
         public static HashSet<Point3D> ExternalEdgePoint3Ds(this IEnumerable<Panel> panels, double tolerance = Core.Tolerance.Distance)
         {
             if (panels == null)

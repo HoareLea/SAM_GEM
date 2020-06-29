@@ -16,6 +16,13 @@ namespace SAM.Geometry.GEM
             if (internalEdges == null || internalEdges.Count == 0)
                 return null;
 
+            Plane plane = face3D.GetPlane();
+            if (plane == null)
+                return null;
+
+            Plane plane_Min = face3D.MinPlane();
+            if (plane_Min == null)
+                return null;
 
             List<List<Point2D>> result = new List<List<Point2D>>();
             foreach(IClosed2D closed2D in internalEdges)
@@ -27,6 +34,8 @@ namespace SAM.Geometry.GEM
                 List<Point2D> point2Ds = internalEdge.GetPoints();
                 if (point2Ds == null || point2Ds.Count < 3)
                     continue;
+
+                point2Ds.ForEach(x => plane_Min.Convert(plane.Convert(x)));
 
                 point2Ds.ForEach(x => x.Round(tolerance));
                 result.Add(point2Ds);

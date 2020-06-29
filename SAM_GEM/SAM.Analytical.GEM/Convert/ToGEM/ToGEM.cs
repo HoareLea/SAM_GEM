@@ -1,4 +1,5 @@
-﻿using SAM.Geometry.Planar;
+﻿using SAM.Geometry.GEM;
+using SAM.Geometry.Planar;
 using SAM.Geometry.Spatial;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,36 +119,40 @@ namespace SAM.Analytical.GEM
                     List<Aperture> apertures = panel.Apertures;
                     if (apertures != null && apertures.Count != 0)
                     {
-                        foreach (Aperture aperture in apertures)
+                        Plane plane_Min = panel.GetFace3D().MinPlane();
+                        if(plane_Min != null)
                         {
-                            ApertureConstruction apertureConstruction = aperture?.ApertureConstruction;
-                            if (apertureConstruction == null)
-                                continue;
-
-                            ApertureType apertureType = apertureConstruction.ApertureType;
-                            if (apertureType == ApertureType.Undefined)
-                                continue;
-
-                            HashSet<Point2D> point2Ds = aperture.ExternalEdgePoint2Ds(tolerance);
-                            if (point2Ds == null || point2Ds.Count == 0)
-                                continue;
-
-                            List<List<Point2D>> point2Ds_apertures = null;
-                            switch (apertureType)
+                            foreach (Aperture aperture in apertures)
                             {
-                                case ApertureType.Door:
-                                    point2Ds_apertures = doors;
-                                    break;
+                                ApertureConstruction apertureConstruction = aperture?.ApertureConstruction;
+                                if (apertureConstruction == null)
+                                    continue;
 
-                                case ApertureType.Window:
-                                    point2Ds_apertures = windows;
-                                    break;
+                                ApertureType apertureType = apertureConstruction.ApertureType;
+                                if (apertureType == ApertureType.Undefined)
+                                    continue;
+
+                                List<Point3D> externalEdge_Aperture = aperture.ExternalEdgePoint3Ds(tolerance)?.ToList();
+                                if (externalEdge_Aperture == null || externalEdge_Aperture.Count == 0)
+                                    continue;
+
+                                List<List<Point2D>> point2Ds_Apertures = null;
+                                switch (apertureType)
+                                {
+                                    case ApertureType.Door:
+                                        point2Ds_Apertures = doors;
+                                        break;
+
+                                    case ApertureType.Window:
+                                        point2Ds_Apertures = windows;
+                                        break;
+                                }
+
+                                if (point2Ds_Apertures == null)
+                                    continue;
+
+                                point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane_Min.Convert(x)));
                             }
-
-                            if (point2Ds_apertures == null)
-                                continue;
-
-                            point2Ds_apertures.Add(point2Ds.ToList());
                         }
                     }
 
