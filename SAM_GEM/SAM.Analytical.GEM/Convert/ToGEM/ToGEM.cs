@@ -61,7 +61,6 @@ namespace SAM.Analytical.GEM
             return result;
         }
 
-
         private static string ToGEM(this IEnumerable<Panel> panels, string name, GEMType gEMType, double tolerance = Core.Tolerance.Distance)
         {
             if (panels == null)
@@ -109,6 +108,11 @@ namespace SAM.Analytical.GEM
                     if (externalEdge == null)
                         continue;
 
+                    Plane plane_Min = new Plane(panel.Plane.Origin, panel.Normal);
+
+                    List<Point2D> externalEdge2D = externalEdge.ConvertAll(x => plane_Min.Convert(x));
+                    plane_Min = new Plane(plane_Min.Convert(externalEdge2D.Min()), panel.Normal);
+
                     List<List<Point2D>> holes = Query.InternalEdgesPoint2Ds(panel, tolerance);
                     if (holes == null)
                         holes = new List<List<Point2D>>();
@@ -119,7 +123,7 @@ namespace SAM.Analytical.GEM
                     List<Aperture> apertures = panel.Apertures;
                     if (apertures != null && apertures.Count != 0)
                     {
-                        Plane plane_Min = panel.GetFace3D().MinPlane();
+                        //Plane plane_Min = panel.GetFace3D().MinPlane();
                         if(plane_Min != null)
                         {
                             foreach (Aperture aperture in apertures)
@@ -182,7 +186,10 @@ namespace SAM.Analytical.GEM
             string result = string.Format("{0} {1}\n", point2Ds.Count(), (int)openingType);
 
             foreach (Point2D point2D in point2Ds)
-                result += string.Format(" {0} {1}\n", System.Math.Abs(point2D.X), System.Math.Abs(point2D.Y));
+                result += string.Format(" {0} {1}\n", point2D.X, point2D.Y);
+
+            //foreach (Point2D point2D in point2Ds)
+            //    result += string.Format(" {0} {1}\n", System.Math.Abs(point2D.X), System.Math.Abs(point2D.Y));
 
             return result;
         }
