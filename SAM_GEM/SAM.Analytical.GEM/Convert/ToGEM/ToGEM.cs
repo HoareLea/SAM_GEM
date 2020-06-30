@@ -181,8 +181,8 @@ namespace SAM.Analytical.GEM
 
             string result = string.Format("{0} {1}\n", point2Ds.Count(), (int)openingType);
 
-            foreach(Point2D point2D in point2Ds)
-                result += string.Format(" {0} {1}\n", point2D.X, point2D.Y);
+            foreach (Point2D point2D in point2Ds)
+                result += string.Format(" {0} {1}\n", System.Math.Abs(point2D.X), System.Math.Abs(point2D.Y));
 
             return result;
         }
