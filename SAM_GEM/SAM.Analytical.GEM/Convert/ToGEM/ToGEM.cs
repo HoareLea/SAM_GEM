@@ -125,7 +125,7 @@ namespace SAM.Analytical.GEM
                     {
                         //Plane plane_Min = panel.GetFace3D().MinPlane();
                         //if(plane_Min != null)
-                        if(plane == null)
+                        if(plane != null)
                         {
                             foreach (Aperture aperture in apertures)
                             {
@@ -156,7 +156,7 @@ namespace SAM.Analytical.GEM
                                 if (point2Ds_Apertures == null)
                                     continue;
 
-                                point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert((x - point3D_BottomRight).ToPoint3D())));
+                                point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert((new Vector3D(x, point3D_BottomRight)).ToPoint3D())));
                             }
                         }
                     }
