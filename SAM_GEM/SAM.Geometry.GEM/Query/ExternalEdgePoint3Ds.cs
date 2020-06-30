@@ -23,8 +23,8 @@ namespace SAM.Geometry.GEM
             if (point3Ds == null)
                 return null;
 
-            if (!Spatial.Query.Clockwise(point3Ds, normal, Core.Tolerance.Angle, tolerance))
-                point3Ds.Reverse();
+            //if (!Spatial.Query.Clockwise(point3Ds, normal, Core.Tolerance.Angle, tolerance))
+            //    point3Ds.Reverse();
 
             HashSet<Point3D> result = new HashSet<Point3D>();
             if (point3Ds.Count == 0)
