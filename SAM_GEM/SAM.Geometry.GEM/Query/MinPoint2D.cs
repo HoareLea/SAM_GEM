@@ -20,7 +20,26 @@ namespace SAM.Geometry.GEM
             if (point2Ds == null)
                 return null;
 
-            return point2Ds.Min();
+            double x = double.MinValue;
+            double y = double.MaxValue;
+            foreach(Point2D point2D in point2Ds)
+            {
+                if (point2D == null)
+                    continue;
+
+                double x_Temp = point2D.X;
+                if (x < x_Temp)
+                    x = x_Temp;
+
+                double y_Temp = point2D.Y;
+                if (y > y_Temp)
+                    y = y_Temp;
+            }
+
+            if (x == double.MinValue || y == double.MaxValue)
+                return null;
+
+            return new Point2D(x, y);
         }
     }
 }

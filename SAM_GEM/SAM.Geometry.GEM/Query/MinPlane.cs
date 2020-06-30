@@ -17,7 +17,7 @@ namespace SAM.Geometry.GEM
             if (point3D == null)
                 return null;
 
-            return new Plane(plane, point3D);
+            return new Plane(plane, new Point3D(point3D.X, point3D.Y, face3D.GetBoundingBox().Min.Z));
         }
     }
 }
