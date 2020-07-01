@@ -34,11 +34,7 @@ namespace SAM.Geometry.GEM
 
             Plane result = new Plane(plane.Origin, axis_X, axis_Y);
 
-            HashSet<Point3D> point3Ds = face3D.ExternalEdgePoint3Ds(tolerance);
-            if (point3Ds == null || point3Ds.Count == 0)
-                return result;
-
-            List<Point2D> point2Ds = point3Ds.ToList().ConvertAll(x => result.Convert(x));
+            List<Point2D> point2Ds = face3D.ExternalEdgePoint3Ds(tolerance)?.ToList().ConvertAll(x => result.Convert(x));
             if (point2Ds == null || point2Ds.Count == 0)
                 return result;
 
