@@ -1,5 +1,4 @@
-﻿using SAM.Geometry.GEM;
-using SAM.Geometry.Planar;
+﻿using SAM.Geometry.Planar;
 using SAM.Geometry.Spatial;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,17 +10,18 @@ namespace SAM.Analytical.GEM
     {
         public static string ToGEM(this AdjacencyCluster adjacencyCluster, double silverSpacing = Core.Tolerance.MacroDistance, double tolerance = Core.Tolerance.Distance)
         {
-            if (adjacencyCluster == null)
+            AdjacencyCluster adjacencyCluster_Temp = adjacencyCluster?.SplitByInternalEdges(tolerance);
+            if (adjacencyCluster_Temp == null)
                 return null;
 
             string result = null;
 
-            List<Space> spaces = adjacencyCluster.GetSpaces();
+            List<Space> spaces = adjacencyCluster_Temp.GetSpaces();
             if(spaces != null && spaces.Count != 0)
             {
                 foreach(Space space in spaces)
                 {                   
-                    List<Panel> panels = adjacencyCluster.UpdateNormals(space, silverSpacing, tolerance);
+                    List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
                         continue;
 
@@ -41,7 +41,7 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            List<Panel> panels_Shading = adjacencyCluster.GetShadingPanels();
+            List<Panel> panels_Shading = adjacencyCluster_Temp.GetShadingPanels();
             if(panels_Shading != null)
             {
                 for(int i=0; i < panels_Shading.Count; i++)
