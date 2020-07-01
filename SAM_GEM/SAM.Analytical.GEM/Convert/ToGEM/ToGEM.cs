@@ -108,11 +108,8 @@ namespace SAM.Analytical.GEM
                     if (externalEdge == null)
                         continue;
 
-                    Plane plane = new Plane(panel.Origin, panel.Normal);
-
-                    BoundingBox2D boundingBox2D = new BoundingBox2D(externalEdge.ConvertAll(x => plane.Convert(x)));
-                    Point3D point3D_BottomRight = plane.Convert(boundingBox2D.GetPoint(Geometry.Corner.BottomRight));
-
+                    Plane plane = panel.ReferencePlane(tolerance);
+                    
                     List<List<Point2D>> holes = Query.InternalEdgesPoint2Ds(panel, tolerance);
                     if (holes == null)
                         holes = new List<List<Point2D>>();
@@ -156,7 +153,7 @@ namespace SAM.Analytical.GEM
                                 if (point2Ds_Apertures == null)
                                     continue;
 
-                                point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert((new Vector3D(x, point3D_BottomRight)).ToPoint3D())));
+                                point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert(x)));
                             }
                         }
                     }
