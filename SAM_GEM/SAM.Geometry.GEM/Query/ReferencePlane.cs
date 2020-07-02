@@ -15,10 +15,10 @@ namespace SAM.Geometry.GEM
 
             Vector3D normal = plane.Normal;
 
-            Vector3D axis_Y = new Plane(plane, Point3D.Zero()).Project(Vector3D.WorldZ());
+            Vector3D axis_Y = new Plane(plane, Point3D.Zero).Project(Vector3D.WorldZ);
             if (axis_Y.Length <= tolerance)
             {
-                axis_Y = Vector3D.WorldY();
+                axis_Y = Vector3D.WorldY;
                 if (normal.Z > 0)
                     axis_Y.Negate();
             }
@@ -26,7 +26,7 @@ namespace SAM.Geometry.GEM
             Vector3D axis_X = axis_Y.CrossProduct(normal); 
             if(axis_X.Length <= tolerance)
             {
-                axis_X = Vector3D.WorldX();
+                axis_X = Vector3D.WorldX;
                 if (normal.Z > 0)
                     axis_X.Negate();
             }
