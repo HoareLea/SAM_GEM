@@ -1,6 +1,7 @@
 # SAM_GEM
 
 ## SAM tool to produce .GEM file
+[![Build Status](https://hldigitalinnovation.visualstudio.com/HLApps/_apis/build/status/SAM/SAM-deploy-SAM_GEM?branchName=master)](https://hldigitalinnovation.visualstudio.com/HLApps/_build/latest?definitionId=25&branchName=master)
 
 GEM is
 A *.gem file is a VE native file type. 
