@@ -12,7 +12,7 @@ namespace SAM.Geometry.GEM
             if (face3D == null)
                 return null;
 
-            List<IClosedPlanar3D> internalEdges = face3D.GetInternalEdges();
+            List<IClosedPlanar3D> internalEdges = face3D.GetInternalEdge3Ds();
             if (internalEdges == null || internalEdges.Count == 0)
                 return null;
 

@@ -15,7 +15,7 @@ namespace SAM.Geometry.GEM
             if (normal == null)
                 return null;
 
-            ISegmentable3D externalEdge = face3D.GetExternalEdge() as ISegmentable3D;
+            ISegmentable3D externalEdge = face3D.GetExternalEdge3D() as ISegmentable3D;
             if (externalEdge == null)
                 throw new NotImplementedException();
 
