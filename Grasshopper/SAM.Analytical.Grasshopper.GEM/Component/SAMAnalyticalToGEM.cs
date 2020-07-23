@@ -66,11 +66,12 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// </param>
         protected override void SolveInstance(IGH_DataAccess dataAccess)
         {
+            dataAccess.SetData(1, false);
+
             bool run = false;
             if (!dataAccess.GetData(3, ref run))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
-                dataAccess.SetData(1, false);
                 return;
             }
             if (!run)
@@ -80,7 +81,6 @@ namespace SAM.Analytical.GEM.Grasshopper
             if (!dataAccess.GetData(0, ref adjacencyCluster) || adjacencyCluster == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
-                dataAccess.SetData(1, false);
                 return;
             }
 
@@ -91,7 +91,6 @@ namespace SAM.Analytical.GEM.Grasshopper
             if (!dataAccess.GetData(2, ref tolerance))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
-                dataAccess.SetData(1, false);
                 return;
             }
 
