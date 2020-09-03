@@ -21,7 +21,7 @@ namespace SAM.Analytical.GEM
             {
                 foreach(Space space in spaces)
                 {                   
-                    List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, silverSpacing, tolerance);
+                    List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
                         continue;
 

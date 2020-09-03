@@ -11,20 +11,31 @@ namespace SAM.Geometry.GEM
             if (face3D == null)
                 return null;
 
-            Vector3D normal = face3D.GetPlane().Normal;
-            if (normal == null)
-                return null;
+            Face3D face3D_Temp = new Face3D(face3D);
+            face3D_Temp.Normalize(tolerance);
 
-            ISegmentable3D externalEdge = face3D.GetExternalEdge3D() as ISegmentable3D;
-            if (externalEdge == null)
+            ISegmentable3D externalEdge = face3D_Temp.GetExternalEdge3D() as ISegmentable3D;
+            if(externalEdge == null)
                 throw new NotImplementedException();
 
             List<Point3D> point3Ds = externalEdge.GetPoints();
             if (point3Ds == null)
                 return null;
 
-            if (!Spatial.Query.Clockwise(point3Ds, normal, Core.Tolerance.Angle, tolerance))
-                point3Ds.Reverse();
+            //Vector3D normal = face3D.GetPlane().Normal;
+            //if (normal == null)
+            //    return null;
+
+            //ISegmentable3D externalEdge = face3D.GetExternalEdge3D() as ISegmentable3D;
+            //if (externalEdge == null)
+            //    throw new NotImplementedException();
+
+            //List<Point3D> point3Ds = externalEdge.GetPoints();
+            //if (point3Ds == null)
+            //    return null;
+
+            //if (!Spatial.Query.Clockwise(point3Ds, normal, Core.Tolerance.Angle, tolerance))
+            //    point3Ds.Reverse();
 
             HashSet<Point3D> result = new HashSet<Point3D>();
             if (point3Ds.Count == 0)
