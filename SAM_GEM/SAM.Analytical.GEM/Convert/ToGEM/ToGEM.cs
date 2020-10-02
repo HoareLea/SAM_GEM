@@ -119,25 +119,33 @@ namespace SAM.Analytical.GEM
 
             Plane plane = null;
 
-            List<List<Point2D>> holes = new List<List<Point2D>>();
-
-            //Handling Panels with Air PanelType
-            if (panel.PanelType == PanelType.Air)
+            //Handling Panels with Air PanelType and CurtainWall PanelType
+            if (panel.PanelType == PanelType.Air || panel.PanelType == PanelType.CurtainWall)
             {
                 plane = panel.ReferencePlane(tolerance);
                 if(plane != null)
                 {
-                    holes.Add(externalEdge.ConvertAll(x => plane.Convert(x)));
+                    List<List<Point2D>> openings = new List<List<Point2D>>();
+
+                    openings.Add(externalEdge.ConvertAll(x => plane.Convert(x)));
 
                     result += string.Format("{0} {1}\n", externalEdge.Count, string.Join(" ", externalEdge.ConvertAll(x => point3Ds.IndexOf(x) + 1)));
-                    result += string.Format("{0}\n", holes.Count);
+                    result += string.Format("{0}\n", openings.Count);
 
-                    foreach (List<Point2D> hole in holes)
-                        result += ToGEM(hole, OpeningType.Hole);
+                    OpeningType openingType = OpeningType.Undefined;
+                    if (panel.PanelType == PanelType.Air)
+                        openingType = OpeningType.Hole;
+                    else
+                        openingType = OpeningType.Window;
+                    
+                    foreach (List<Point2D> opening in openings)
+                        result += ToGEM(opening, openingType);
                 }
 
                 return result;
             }
+
+            List<List<Point2D>> holes = new List<List<Point2D>>();
 
             List<List<Point3D>> internalEdgesPoint3Ds = Query.InternalEdgesPoint3Ds(panel, tolerance);
             if (internalEdgesPoint3Ds != null)
