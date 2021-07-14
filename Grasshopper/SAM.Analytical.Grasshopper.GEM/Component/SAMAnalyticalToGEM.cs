@@ -90,7 +90,7 @@ namespace SAM.Analytical.GEM.Grasshopper
             }
 
             string path = null;
-            dataAccess.GetData<string>(1, ref path);
+            dataAccess.GetData(1, ref path);
 
             double tolerance = Tolerance.Distance;
             if (!dataAccess.GetData(2, ref tolerance))
