@@ -1,4 +1,5 @@
-﻿using SAM.Geometry.Planar;
+﻿using SAM.Core;
+using SAM.Geometry.Planar;
 using SAM.Geometry.Spatial;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,107 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Convert
     {
-        public static string ToGEM(this AdjacencyCluster adjacencyCluster, double silverSpacing = Core.Tolerance.MacroDistance, double tolerance = Core.Tolerance.Distance)
+        public static string ToGEM(this AnalyticalModel analyticalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
+        {
+            if(analyticalModel == null)
+            {
+                return null;
+            }
+
+            AdjacencyCluster adjacencyCluster = analyticalModel.AdjacencyCluster;
+
+            MaterialLibrary materialLibrary = analyticalModel.MaterialLibrary;
+            if (materialLibrary != null)
+            {
+                List<Panel> panels = null;
+
+                //Updating Apertures: Changing ApertureType wich depends on Transparency (transparent Door will become Window and not transparent Window will become Door)
+                panels = adjacencyCluster.GetPanels();
+                if (panels != null && panels.Count != 0)
+                {
+                    foreach (Panel panel in panels)
+                    {
+                        if (panel == null)
+                        {
+                            continue;
+                        }
+
+                        List<Aperture> apertures = panel.Apertures;
+                        if (apertures == null || apertures.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        Panel panel_New = Create.Panel(panel);
+
+                        bool updated = false;
+                        foreach (Aperture aperture in apertures)
+                        {
+                            if (aperture == null)
+                            {
+                                continue;
+                            }
+
+                            ApertureConstruction apertureConstruction = aperture.ApertureConstruction;
+                            if (apertureConstruction == null)
+                            {
+                                continue;
+                            }
+
+                            bool transparent = aperture.Transparent(materialLibrary);
+                            ApertureType apertureType = aperture.ApertureType;
+
+                            if (transparent && apertureType == ApertureType.Door)
+                            {
+                                panel_New.RemoveAperture(aperture.Guid);
+                                apertureConstruction = new ApertureConstruction(aperture.ApertureConstruction, ApertureType.Window);
+                                Aperture aperture_New = new Aperture(aperture, apertureConstruction);
+                                panel_New.AddAperture(aperture_New);
+                                updated = true;
+                            }
+                            else if (!transparent && apertureType == ApertureType.Window)
+                            {
+                                panel_New.RemoveAperture(aperture.Guid);
+                                apertureConstruction = new ApertureConstruction(aperture.ApertureConstruction, ApertureType.Door);
+                                Aperture aperture_New = new Aperture(aperture, apertureConstruction);
+                                panel_New.AddAperture(aperture_New);
+                                updated = true;
+                            }
+                        }
+
+                        if (!updated)
+                        {
+                            continue;
+                        }
+
+                        adjacencyCluster.AddObject(panel_New);
+                    }
+                }
+
+                //Updating Panels: Changing PAnelType which depends on Transparency (transparent Wall will become CurtainWall)
+                panels = adjacencyCluster.TransparentPanels(materialLibrary);
+                if (panels != null && panels.Count != 0)
+                {
+                    foreach (Panel panel in panels)
+                    {
+                        if (panel == null)
+                        {
+                            continue;
+                        }
+
+                        if (panel.PanelType != PanelType.CurtainWall)
+                        {
+                            Panel panel_New = Create.Panel(panel, PanelType.CurtainWall);
+                            adjacencyCluster.AddObject(panel_New);
+                        }
+                    }
+                }
+            }
+
+            return ToGEM(adjacencyCluster, silverSpacing, tolerance);
+        }
+
+        private static string ToGEM(this AdjacencyCluster adjacencyCluster, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
         {
             AdjacencyCluster adjacencyCluster_Temp = adjacencyCluster?.SplitByInternalEdges(tolerance);
             if (adjacencyCluster_Temp == null)
@@ -20,7 +121,7 @@ namespace SAM.Analytical.GEM
             if(spaces != null && spaces.Count != 0)
             {
                 foreach(Space space in spaces)
-                {                   
+                {
                     List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
                         continue;
@@ -60,7 +161,7 @@ namespace SAM.Analytical.GEM
             return result;
         }
         
-        private static string ToGEM(this IEnumerable<Panel> panels, string name, GEMType gEMType, double tolerance = Core.Tolerance.Distance)
+        private static string ToGEM(this IEnumerable<Panel> panels, string name, GEMType gEMType, double tolerance = Tolerance.Distance)
         {
             if (panels == null)
                 return null;
@@ -109,7 +210,7 @@ namespace SAM.Analytical.GEM
             return result;
         }
 
-        private static string ToGEM(this Panel panel, List<Point3D> point3Ds, double tolerance = Core.Tolerance.Distance)
+        private static string ToGEM(this Panel panel, List<Point3D> point3Ds, double tolerance = Tolerance.Distance)
         {
             string result = string.Empty;
 
@@ -119,8 +220,16 @@ namespace SAM.Analytical.GEM
 
             Plane plane = null;
 
+            PanelType panelType = panel.PanelType;
+
+            Construction construction = panel.Construction;
+            if(construction == null)
+            {
+                panelType = PanelType.Air;
+            }
+
             //Handling Panels with Air PanelType and CurtainWall PanelType
-            if (panel.PanelType == PanelType.Air || panel.PanelType == PanelType.CurtainWall)
+            if (panelType == PanelType.Air || panelType == PanelType.CurtainWall)
             {
                 plane = panel.ReferencePlane(tolerance);
                 if(plane != null)

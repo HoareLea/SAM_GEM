@@ -17,7 +17,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.0";
+        public override string LatestComponentVersion => "1.0.1";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -43,7 +43,7 @@ namespace SAM.Analytical.GEM.Grasshopper
 
             int index = -1;
 
-            index = inputParamManager.AddParameter(new GooAdjacencyClusterParam(), "_adjacencyCluster", "_adjacencyCluster", "SAM Analytical Adjacency Cluster", GH_ParamAccess.item);
+            index = inputParamManager.AddParameter(new GooAnalyticalModelParam(), "_analyticalModel", "_analyticalModel", "SAM Analytical Model", GH_ParamAccess.item);
             //inputParamManager[index].DataMapping = GH_DataMapping.Flatten;
 
             index = inputParamManager.AddTextParameter("path_", "path_", "GEM file path including extension .gem", GH_ParamAccess.item, path);
@@ -82,8 +82,8 @@ namespace SAM.Analytical.GEM.Grasshopper
             if (!run)
                 return;
 
-            AdjacencyCluster adjacencyCluster = null;
-            if (!dataAccess.GetData(0, ref adjacencyCluster) || adjacencyCluster == null)
+            AnalyticalModel analyticalModel = null;
+            if (!dataAccess.GetData(0, ref analyticalModel) || analyticalModel == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
@@ -99,7 +99,7 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
             }
 
-            string gEM = Convert.ToGEM(adjacencyCluster, Tolerance.MacroDistance, tolerance);
+            string gEM = Convert.ToGEM(analyticalModel, Tolerance.MacroDistance, tolerance);
 
             if (!string.IsNullOrWhiteSpace(path))
                 System.IO.File.WriteAllText(path, gEM);
