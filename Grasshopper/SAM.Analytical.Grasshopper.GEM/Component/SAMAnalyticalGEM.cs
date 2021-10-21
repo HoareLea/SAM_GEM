@@ -3,11 +3,10 @@ using SAM.Core.Grasshopper;
 using SAM.Analytical.Grasshopper.GEM.Properties;
 using System;
 using SAM.Core;
-using SAM.Analytical.Grasshopper;
 
 namespace SAM.Analytical.GEM.Grasshopper
 {
-    public class SAMAnalyticalToGEM : GH_SAMComponent
+    public class SAMAnalyticalGEM : GH_SAMComponent
     {
         /// <summary>
         /// Gets the unique ID for this component. Do not change this ID after release.
@@ -17,7 +16,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.1";
+        public override string LatestComponentVersion => "1.0.2";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -27,8 +26,8 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// Initializes a new instance of the SAM_point3D class.
         /// </summary>
-        public SAMAnalyticalToGEM()
-          : base("ToGEM", "ToGEM",
+        public SAMAnalyticalGEM()
+          : base("SAMAnalytical.GEM", "SAMAnalytical.GEM",
               "Writes SAM objects to GEM file ",
               "SAM", "GEM")
         {
@@ -43,7 +42,7 @@ namespace SAM.Analytical.GEM.Grasshopper
 
             int index = -1;
 
-            index = inputParamManager.AddParameter(new GooAnalyticalModelParam(), "_analyticalModel", "_analyticalModel", "SAM Analytical Model", GH_ParamAccess.item);
+            index = inputParamManager.AddParameter(new global::Grasshopper.Kernel.Parameters.Param_GenericObject(), "_analyticalModel", "_analyticalModel", "SAM Analytical Model", GH_ParamAccess.item);
             //inputParamManager[index].DataMapping = GH_DataMapping.Flatten;
 
             index = inputParamManager.AddTextParameter("path_", "path_", "GEM file path including extension .gem", GH_ParamAccess.item, path);
@@ -82,8 +81,8 @@ namespace SAM.Analytical.GEM.Grasshopper
             if (!run)
                 return;
 
-            AnalyticalModel analyticalModel = null;
-            if (!dataAccess.GetData(0, ref analyticalModel) || analyticalModel == null)
+            SAMObject sAMObject = null;
+            if (!dataAccess.GetData(0, ref sAMObject) || sAMObject == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
@@ -99,7 +98,25 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
             }
 
-            string gEM = Convert.ToGEM(analyticalModel, Tolerance.MacroDistance, tolerance);
+            string gEM = null;
+            if (sAMObject is AnalyticalModel)
+            {
+                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, Tolerance.MacroDistance, tolerance);
+            }
+            else if(sAMObject is ArchitecturalModel)
+            {
+                gEM = Convert.ToGEM((ArchitecturalModel)sAMObject, Tolerance.MacroDistance, tolerance);
+            }
+            else
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
+                return;
+            }
+
+            if(gEM == null)
+            {
+                gEM = string.Empty;
+            }
 
             if (!string.IsNullOrWhiteSpace(path))
                 System.IO.File.WriteAllText(path, gEM);

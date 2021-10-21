@@ -41,5 +41,10 @@ namespace SAM.Geometry.GEM
 
             return new Plane(result.Convert(point2D_Min), axis_X, axis_Y);
         }
+
+        public static Plane ReferencePlane(this IFace3DObject face3DObject, double tolerance = Core.Tolerance.Distance)
+        {
+            return ReferencePlane(face3DObject?.Face3D, tolerance);
+        }
     }
 }

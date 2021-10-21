@@ -33,5 +33,10 @@ namespace SAM.Geometry.GEM
 
             return result;
         }
+
+        public static List<List<Point3D>> InternalEdgesPoint3Ds(this IFace3DObject face3DObject, double tolerance = Core.Tolerance.Distance)
+        {
+            return InternalEdgesPoint3Ds(face3DObject?.Face3D, tolerance);
+        }
     }
 }

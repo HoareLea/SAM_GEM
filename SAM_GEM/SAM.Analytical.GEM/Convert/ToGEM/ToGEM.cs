@@ -4,6 +4,8 @@ using SAM.Geometry.Spatial;
 using System.Collections.Generic;
 using System.Linq;
 
+using SAM.Geometry.GEM;
+
 
 namespace SAM.Analytical.GEM
 {
@@ -194,7 +196,7 @@ namespace SAM.Analytical.GEM
             result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), colourRGB);
             result += string.Format("{0} {1}\n", Core.GEM.Query.ParameterName_Name(), name);
 
-            List<Point3D> point3Ds = Query.ExternalEdgePoint3Ds(panels, tolerance)?.ToList();
+            List<Point3D> point3Ds =  panels?.ExternalEdgePoint3Ds(tolerance)?.ToList();
             if (point3Ds != null || point3Ds.Count > 2)
             {
                 result += string.Format("{0} {1}\n", point3Ds.Count, panels.Count());
@@ -214,7 +216,7 @@ namespace SAM.Analytical.GEM
         {
             string result = string.Empty;
 
-            List<Point3D> externalEdge = Query.ExternalEdgePoint3Ds(panel, tolerance)?.ToList();
+            List<Point3D> externalEdge = panel?.ExternalEdgePoint3Ds(tolerance)?.ToList();
             if (externalEdge == null)
                 return result;
 
@@ -256,7 +258,7 @@ namespace SAM.Analytical.GEM
 
             List<List<Point2D>> holes = new List<List<Point2D>>();
 
-            List<List<Point3D>> internalEdgesPoint3Ds = Query.InternalEdgesPoint3Ds(panel, tolerance);
+            List<List<Point3D>> internalEdgesPoint3Ds = panel?.InternalEdgesPoint3Ds(tolerance);
             if (internalEdgesPoint3Ds != null)
             {
                 plane = panel.ReferencePlane(tolerance);
@@ -341,6 +343,210 @@ namespace SAM.Analytical.GEM
 
             //foreach (Point2D point2D in point2Ds)
             //    result += string.Format(" {0} {1}\n", System.Math.Abs(point2D.X), System.Math.Abs(point2D.Y));
+
+            return result;
+        }
+
+        private static string ToGEM(this IPartition partition, List<Point3D> point3Ds, double tolerance = Tolerance.Distance)
+        {
+            string result = string.Empty;
+
+            List<Point3D> externalEdge = partition?.ExternalEdgePoint3Ds(tolerance)?.ToList();
+            if (externalEdge == null)
+                return result;
+
+            Plane plane = partition.ReferencePlane(tolerance);
+
+            //Handling Air Partitions and CurtainWalls
+            if(partition is AirPartition)//if (panelType == PanelType.Air || panelType == PanelType.CurtainWall)
+            {
+                if (plane != null)
+                {
+                    List<List<Point2D>> openings = new List<List<Point2D>>();
+
+                    openings.Add(externalEdge.ConvertAll(x => plane.Convert(x)));
+
+                    result += string.Format("{0} {1}\n", externalEdge.Count, string.Join(" ", externalEdge.ConvertAll(x => point3Ds.IndexOf(x) + 1)));
+                    result += string.Format("{0}\n", openings.Count);
+
+                    OpeningType openingType = OpeningType.Undefined;
+                    if (partition is AirPartition)
+                        openingType = OpeningType.Hole;
+                    else
+                        openingType = OpeningType.Window; //CurtainWall
+
+                    foreach (List<Point2D> opening in openings)
+                        result += ToGEM(opening, openingType);
+                }
+
+                return result;
+            }
+
+            List<List<Point2D>> holes = new List<List<Point2D>>();
+
+            List<List<Point3D>> internalEdgesPoint3Ds = partition?.InternalEdgesPoint3Ds(tolerance);
+            if (internalEdgesPoint3Ds != null)
+            {
+                if (plane != null)
+                {
+                    foreach (List<Point3D> internalEdge in internalEdgesPoint3Ds)
+                        holes.Add(internalEdge.ConvertAll(x => plane.Convert(x)));
+                }
+            }
+
+            List<List<Point2D>> windows = new List<List<Point2D>>();
+            List<List<Point2D>> doors = new List<List<Point2D>>();
+
+            if (plane != null && partition is IHostPartition)
+            {
+                List<IOpening> openings = ((IHostPartition)partition).Openings;
+                if (openings != null && openings.Count != 0)
+                {
+                    foreach (IOpening opening in openings)
+                    {
+                        List<Point3D> externalEdge_Aperture = opening.ExternalEdgePoint3Ds(tolerance)?.ToList();
+                        if (externalEdge_Aperture == null || externalEdge_Aperture.Count == 0)
+                            continue;
+
+                        List<List<Point2D>> point2Ds_Apertures = null;
+                        if(opening is Door)
+                        {
+                            point2Ds_Apertures = doors;
+                        }
+                        else if(opening is Window)
+                        {
+                            point2Ds_Apertures = windows;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                        if (point2Ds_Apertures == null)
+                            continue;
+
+                        point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert(x)));
+                    }
+                }
+            }
+
+            result += string.Format("{0} {1}\n", externalEdge.Count, string.Join(" ", externalEdge.ConvertAll(x => point3Ds.IndexOf(x) + 1)));
+
+            result += string.Format("{0}\n", windows.Count + doors.Count + holes.Count);
+
+            foreach (List<Point2D> hole in holes)
+                result += ToGEM(hole, OpeningType.Hole);
+
+            foreach (List<Point2D> window in windows)
+                result += ToGEM(window, OpeningType.Window);
+
+            foreach (List<Point2D> door in doors)
+                result += ToGEM(door, OpeningType.Door);
+
+            return result;
+        }
+
+        private static string ToGEM(this IEnumerable<IPartition> partitions, string name, GEMType gEMType, double tolerance = Tolerance.Distance)
+        {
+            if (partitions == null)
+                return null;
+
+            string result = string.Empty;
+
+            int layer = -1;
+            int colourRGB = -1;
+            int colour = -1;
+            switch (gEMType)
+            {
+                case GEMType.Shade:
+                    layer = 64;
+                    colourRGB = 65280;
+                    colour = 0;
+                    break;
+                case GEMType.Space:
+                    layer = 1;
+                    colourRGB = 16711690;
+                    colour = 1;
+                    break;
+                default:
+                    return null;
+            }
+
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Layer(), layer);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Colour(), colour);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Category(), 1);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Type(), (int)gEMType);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), colourRGB);
+            result += string.Format("{0} {1}\n", Core.GEM.Query.ParameterName_Name(), name);
+
+            List<Point3D> point3Ds = partitions?.ExternalEdgePoint3Ds(tolerance)?.ToList();
+            if (point3Ds != null || point3Ds.Count > 2)
+            {
+                result += string.Format("{0} {1}\n", point3Ds.Count, partitions.Count());
+                foreach (Point3D point3D in point3Ds)
+                    result += string.Format(" {0} {1} {2}\n", point3D.X, point3D.Y, point3D.Z);
+
+                foreach (IPartition partition in partitions)
+                {
+                    result += ToGEM(partition, point3Ds, tolerance);
+                }
+            }
+
+            return result;
+        }
+
+        public static string ToGEM(this ArchitecturalModel architecturalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
+        {
+            if(architecturalModel == null)
+            {
+                return null;
+            }
+
+            architecturalModel = new ArchitecturalModel(architecturalModel);
+            architecturalModel.SplitByInternalEdges(tolerance);
+
+            string result = null;
+
+            List<Space> spaces = architecturalModel.GetSpaces();
+            if (spaces != null && spaces.Count != 0)
+            {
+                foreach (Space space in spaces)
+                {
+                    List<IPartition> partitions = Query.OrientedPartitions(architecturalModel, space, false, silverSpacing, tolerance);
+                    if (partitions == null || partitions.Count == 0)
+                        continue;
+
+                    string name = space.Name;
+                    if (string.IsNullOrWhiteSpace(name))
+                        name = space.Guid.ToString();
+
+                    string result_space = ToGEM(partitions, name, GEMType.Space, tolerance);
+                    if (result_space == null)
+                        continue;
+
+                    if (result == null)
+                        result = result_space;
+                    else
+                        result += result_space;
+                }
+            }
+
+            List<IPartition> partitions_Shading = architecturalModel.GetShadePartitions();
+            if (partitions_Shading != null)
+            {
+                for (int i = 0; i < partitions_Shading.Count; i++)
+                {
+                    string result_shade = ToGEM(new IPartition[] { partitions_Shading[i] }, string.Format("SHADE {0}", i + 1), GEMType.Shade, tolerance);
+                    if (result_shade == null)
+                        continue;
+
+                    if (result == null)
+                        result = result_shade;
+                    else
+                        result += result_shade;
+
+                }
+            }
 
             return result;
         }

@@ -49,5 +49,29 @@ namespace SAM.Geometry.GEM
 
             return result;
         }
+
+        public static HashSet<Point3D> ExternalEdgePoint3Ds(this IFace3DObject face3DObject, double tolerance = Core.Tolerance.Distance)
+        {
+            return ExternalEdgePoint3Ds(face3DObject?.Face3D, tolerance);
+        }
+
+        public static HashSet<Point3D> ExternalEdgePoint3Ds<T>(this IEnumerable<T> face3DObjects, double tolerance = Core.Tolerance.Distance) where T: IFace3DObject
+        {
+            if (face3DObjects == null)
+                return null;
+
+            HashSet<Point3D> result = new HashSet<Point3D>();
+            foreach (T face3DObject in face3DObjects)
+            {
+                HashSet<Point3D> point3Ds = face3DObject?.ExternalEdgePoint3Ds(tolerance);
+                if (point3Ds == null || point3Ds.Count == 0)
+                    continue;
+
+                foreach (Point3D point3D in point3Ds)
+                    result.Add(point3D);
+            }
+
+            return result;
+        }
     }
 }
