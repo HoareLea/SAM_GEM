@@ -101,11 +101,11 @@ namespace SAM.Analytical.GEM.Grasshopper
             string gEM = null;
             if (sAMObject is AnalyticalModel)
             {
-                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Angle, tolerance);
+                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
             else if(sAMObject is ArchitecturalModel)
             {
-                gEM = Convert.ToGEM((ArchitecturalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Angle, tolerance);
+                gEM = Convert.ToGEM((ArchitecturalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
             else
             {
