@@ -11,7 +11,7 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Convert
     {
-        public static string ToGEM(this AnalyticalModel analyticalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
+        public static string ToGEM(this AnalyticalModel analyticalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
         {
             if(analyticalModel == null)
             {
@@ -19,6 +19,8 @@ namespace SAM.Analytical.GEM
             }
 
             AdjacencyCluster adjacencyCluster = analyticalModel.AdjacencyCluster;
+
+            adjacencyCluster.SimplifyByAngle(tolerance_Angle, tolerance_Distance);
 
             MaterialLibrary materialLibrary = analyticalModel.MaterialLibrary;
             if (materialLibrary != null)
@@ -88,7 +90,7 @@ namespace SAM.Analytical.GEM
                     }
                 }
 
-                //Updating Panels: Changing PAnelType which depends on Transparency (transparent Wall will become CurtainWall)
+                //Updating Panels: Changing PanelType which depends on Transparency (transparent Wall will become CurtainWall)
                 panels = adjacencyCluster.TransparentPanels(materialLibrary);
                 if (panels != null && panels.Count != 0)
                 {
@@ -108,7 +110,7 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            return ToGEM(adjacencyCluster, silverSpacing, tolerance);
+            return ToGEM(adjacencyCluster, silverSpacing, tolerance_Distance);
         }
 
         private static string ToGEM(this AdjacencyCluster adjacencyCluster, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
@@ -495,7 +497,7 @@ namespace SAM.Analytical.GEM
             return result;
         }
 
-        public static string ToGEM(this ArchitecturalModel architecturalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
+        public static string ToGEM(this ArchitecturalModel architecturalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
         {
             if(architecturalModel == null)
             {
@@ -503,7 +505,8 @@ namespace SAM.Analytical.GEM
             }
 
             architecturalModel = new ArchitecturalModel(architecturalModel);
-            architecturalModel.SplitByInternalEdges(tolerance);
+            architecturalModel.SplitByInternalEdges(tolerance_Distance);
+            architecturalModel.SimplifyByAngle(tolerance_Angle, tolerance_Distance);
 
             string result = null;
 
@@ -512,7 +515,7 @@ namespace SAM.Analytical.GEM
             {
                 foreach (Space space in spaces)
                 {
-                    List<IPartition> partitions = Query.OrientedPartitions(architecturalModel, space, false, silverSpacing, tolerance);
+                    List<IPartition> partitions = Query.OrientedPartitions(architecturalModel, space, false, silverSpacing, tolerance_Distance);
                     if (partitions == null || partitions.Count == 0)
                         continue;
 
@@ -520,7 +523,7 @@ namespace SAM.Analytical.GEM
                     if (string.IsNullOrWhiteSpace(name))
                         name = space.Guid.ToString();
 
-                    string result_space = ToGEM(partitions, name, GEMType.Space, tolerance);
+                    string result_space = ToGEM(partitions, name, GEMType.Space, tolerance_Distance);
                     if (result_space == null)
                         continue;
 
@@ -536,7 +539,7 @@ namespace SAM.Analytical.GEM
             {
                 for (int i = 0; i < partitions_Shading.Count; i++)
                 {
-                    string result_shade = ToGEM(new IPartition[] { partitions_Shading[i] }, string.Format("SHADE {0}", i + 1), GEMType.Shade, tolerance);
+                    string result_shade = ToGEM(new IPartition[] { partitions_Shading[i] }, string.Format("SHADE {0}", i + 1), GEMType.Shade, tolerance_Distance);
                     if (result_shade == null)
                         continue;
 
