@@ -103,9 +103,9 @@ namespace SAM.Analytical.GEM.Grasshopper
             {
                 gEM = Convert.ToGEM((AnalyticalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
-            else if(sAMObject is ArchitecturalModel)
+            else if(sAMObject is BuildingModel)
             {
-                gEM = Convert.ToGEM((ArchitecturalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
+                gEM = Convert.ToGEM((BuildingModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
             else
             {

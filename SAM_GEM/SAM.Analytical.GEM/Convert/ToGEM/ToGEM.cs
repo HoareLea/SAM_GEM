@@ -497,25 +497,25 @@ namespace SAM.Analytical.GEM
             return result;
         }
 
-        public static string ToGEM(this ArchitecturalModel architecturalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
+        public static string ToGEM(this BuildingModel buildingModel, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
         {
-            if(architecturalModel == null)
+            if(buildingModel == null)
             {
                 return null;
             }
 
-            architecturalModel = new ArchitecturalModel(architecturalModel);
-            architecturalModel.SplitByInternalEdges(tolerance_Distance);
-            architecturalModel.SimplifyByAngle(tolerance_Angle, tolerance_Distance);
+            buildingModel = new BuildingModel(buildingModel);
+            buildingModel.SplitByInternalEdges(tolerance_Distance);
+            buildingModel.SimplifyByAngle(tolerance_Angle, tolerance_Distance);
 
             string result = null;
 
-            List<Space> spaces = architecturalModel.GetSpaces();
+            List<Space> spaces = buildingModel.GetSpaces();
             if (spaces != null && spaces.Count != 0)
             {
                 foreach (Space space in spaces)
                 {
-                    List<IPartition> partitions = Query.OrientedPartitions(architecturalModel, space, false, silverSpacing, tolerance_Distance);
+                    List<IPartition> partitions = Query.OrientedPartitions(buildingModel, space, false, silverSpacing, tolerance_Distance);
                     if (partitions == null || partitions.Count == 0)
                         continue;
 
@@ -534,7 +534,7 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            List<IPartition> partitions_Shading = architecturalModel.GetShadePartitions();
+            List<IPartition> partitions_Shading = buildingModel.GetShadePartitions();
             if (partitions_Shading != null)
             {
                 for (int i = 0; i < partitions_Shading.Count; i++)
