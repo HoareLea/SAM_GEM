@@ -6,7 +6,7 @@ using SAM.Core;
 
 namespace SAM.Analytical.GEM.Grasshopper
 {
-    public class SAMAnalyticalGEM : GH_SAMComponent
+    public class SAMAnalyticalToGEM : GH_SAMComponent
     {
         /// <summary>
         /// Gets the unique ID for this component. Do not change this ID after release.
@@ -16,7 +16,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.2";
+        public override string LatestComponentVersion => "1.0.3";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -26,8 +26,8 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// Initializes a new instance of the SAM_point3D class.
         /// </summary>
-        public SAMAnalyticalGEM()
-          : base("SAMAnalytical.GEM", "SAMAnalytical.GEM",
+        public SAMAnalyticalToGEM()
+          : base("SAMAnalytical.ToGEM", "SAMAnalytical.ToGEM",
               "Writes SAM objects to GEM file ",
               "SAM", "GEM")
         {
