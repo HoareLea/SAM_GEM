@@ -11,7 +11,7 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Convert
     {
-        public static string ToGEM(this AnalyticalModel analyticalModel, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
+        public static string ToGEM(this AnalyticalModel analyticalModel, bool includePerimeterData = false, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
         {
             if(analyticalModel == null)
             {
@@ -110,10 +110,10 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            return ToGEM(adjacencyCluster, silverSpacing, tolerance_Distance);
+            return ToGEM(adjacencyCluster, includePerimeterData, silverSpacing, tolerance_Distance);
         }
 
-        private static string ToGEM(this AdjacencyCluster adjacencyCluster, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
+        private static string ToGEM(this AdjacencyCluster adjacencyCluster, bool includePerimeterData = false, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
         {
             AdjacencyCluster adjacencyCluster_Temp = adjacencyCluster?.SplitByInternalEdges(tolerance);
             if (adjacencyCluster_Temp == null)
@@ -133,6 +133,12 @@ namespace SAM.Analytical.GEM
                     string name = space.Name;
                     if (string.IsNullOrWhiteSpace(name))
                         name = space.Guid.ToString();
+
+                    if(includePerimeterData)
+                    {
+                        bool isPermieter = Query.IsPerimeter(adjacencyCluster_Temp, space);
+                        name += isPermieter ? "_p" : "_i";
+                    }
 
                     string result_space = ToGEM(panels, name, GEMType.Space, tolerance);
                     if (result_space == null)

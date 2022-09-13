@@ -16,7 +16,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.3";
+        public override string LatestComponentVersion => "1.0.4";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -50,6 +50,8 @@ namespace SAM.Analytical.GEM.Grasshopper
 
             index = inputParamManager.AddNumberParameter("_tolerance_", "_tolerance_", "Tolerance", GH_ParamAccess.item, Tolerance.Distance);
 
+            inputParamManager.AddBooleanParameter("_includePerimeterData_", "_includePerimeterData_", "Include perimeter data in space name", GH_ParamAccess.item, false);
+
             inputParamManager.AddBooleanParameter("_run_", "_run_", "Run, set to True to export GEM to given path", GH_ParamAccess.item, false);
         }
 
@@ -73,7 +75,7 @@ namespace SAM.Analytical.GEM.Grasshopper
             dataAccess.SetData(1, false);
 
             bool run = false;
-            if (!dataAccess.GetData(3, ref run))
+            if (!dataAccess.GetData(4, ref run))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
@@ -98,10 +100,13 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
             }
 
+            bool includePerimeterData = false;
+            dataAccess.GetData(3, ref includePerimeterData);
+
             string gEM = null;
             if (sAMObject is AnalyticalModel)
             {
-                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
+                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, includePerimeterData, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
             else if(sAMObject is BuildingModel)
             {
