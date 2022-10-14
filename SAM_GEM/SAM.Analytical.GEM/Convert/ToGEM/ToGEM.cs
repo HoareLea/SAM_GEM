@@ -126,7 +126,7 @@ namespace SAM.Analytical.GEM
             {
                 foreach(Space space in spaces)
                 {
-                    List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, silverSpacing, tolerance);
+                    List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, true, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
                         continue;
 
@@ -521,7 +521,7 @@ namespace SAM.Analytical.GEM
             {
                 foreach (Space space in spaces)
                 {
-                    List<IPartition> partitions = Query.OrientedPartitions(buildingModel, space, false, silverSpacing, tolerance_Distance);
+                    List<IPartition> partitions = Query.OrientedPartitions(buildingModel, space, false, true, silverSpacing, tolerance_Distance);
                     if (partitions == null || partitions.Count == 0)
                         continue;
 
