@@ -12,7 +12,7 @@ namespace SAM.Geometry.GEM
                 return null;
 
             Face3D face3D_Temp = new Face3D(face3D);
-            face3D_Temp.Normalize(tolerance_Distance: tolerance);
+            face3D_Temp.Normalize(Orientation.Clockwise, tolerance_Distance: tolerance);
 
             ISegmentable3D externalEdge = face3D_Temp.GetExternalEdge3D() as ISegmentable3D;
             if(externalEdge == null)
