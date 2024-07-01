@@ -126,7 +126,7 @@ namespace SAM.Analytical.GEM
             {
                 foreach(Space space in spaces)
                 {
-                    List<Panel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, true,false, silverSpacing, tolerance);
+                    List<IPanel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, true,false, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
                         continue;
 
@@ -171,7 +171,7 @@ namespace SAM.Analytical.GEM
             return result;
         }
         
-        private static string ToGEM(this IEnumerable<Panel> panels, string name, GEMType gEMType, double tolerance = Tolerance.Distance)
+        private static string ToGEM(this IEnumerable<IPanel> panels, string name, GEMType gEMType, double tolerance = Tolerance.Distance)
         {
             if (panels == null)
                 return null;
@@ -211,7 +211,7 @@ namespace SAM.Analytical.GEM
                 foreach (Point3D point3D in point3Ds)
                     result += string.Format(" {0} {1} {2}\n", point3D.X, point3D.Y, point3D.Z);
 
-                foreach (Panel panel in panels)
+                foreach (IPanel panel in panels)
                 {
                     result += ToGEM(panel, point3Ds, tolerance);
                 }
@@ -220,7 +220,7 @@ namespace SAM.Analytical.GEM
             return result;
         }
 
-        private static string ToGEM(this Panel panel, List<Point3D> point3Ds, double tolerance = Tolerance.Distance)
+        private static string ToGEM(this IPanel panel, List<Point3D> point3Ds, double tolerance = Tolerance.Distance)
         {
             string result = string.Empty;
 
@@ -230,9 +230,20 @@ namespace SAM.Analytical.GEM
 
             Plane plane = null;
 
-            PanelType panelType = panel.PanelType;
+            PanelType panelType = PanelType.Undefined;
+            Construction construction = null;
+            if (panel is Panel)
+            {
+                panelType = ((Panel)panel).PanelType;
 
-            Construction construction = panel.Construction;
+                construction = ((Panel)panel).Construction;
+            }
+            else if(panel is ExternalPanel)
+            {
+                construction = ((ExternalPanel)panel).Construction;
+                panelType = Query.PanelType(panel.Face3D?.GetPlane()?.Normal);
+            }
+
             if(construction == null)
             {
                 panelType = PanelType.Air;
@@ -252,7 +263,7 @@ namespace SAM.Analytical.GEM
                     result += string.Format("{0}\n", openings.Count);
 
                     OpeningType openingType = OpeningType.Undefined;
-                    if (panel.PanelType == PanelType.Air)
+                    if (panelType == PanelType.Air)
                         openingType = OpeningType.Hole;
                     else
                         openingType = OpeningType.Window;
@@ -280,48 +291,52 @@ namespace SAM.Analytical.GEM
             List<List<Point2D>> windows = new List<List<Point2D>>();
             List<List<Point2D>> doors = new List<List<Point2D>>();
 
-            List<Aperture> apertures = panel.Apertures;
-            if (apertures != null && apertures.Count != 0)
+            if(panel is Panel)
             {
-                foreach (Aperture aperture in apertures)
+                List<Aperture> apertures = ((Panel)panel).Apertures;
+                if (apertures != null && apertures.Count != 0)
                 {
-                    ApertureConstruction apertureConstruction = aperture?.ApertureConstruction;
-                    if (apertureConstruction == null)
-                        continue;
-
-                    ApertureType apertureType = apertureConstruction.ApertureType;
-                    if (apertureType == ApertureType.Undefined)
-                        continue;
-
-                    List<Point3D> externalEdge_Aperture = aperture.ExternalEdgePoint3Ds(tolerance)?.ToList();
-                    if (externalEdge_Aperture == null || externalEdge_Aperture.Count == 0)
-                        continue;
-
-                    List<List<Point2D>> point2Ds_Apertures = null;
-                    switch (apertureType)
+                    foreach (Aperture aperture in apertures)
                     {
-                        case ApertureType.Door:
-                            point2Ds_Apertures = doors;
+                        ApertureConstruction apertureConstruction = aperture?.ApertureConstruction;
+                        if (apertureConstruction == null)
+                            continue;
+
+                        ApertureType apertureType = apertureConstruction.ApertureType;
+                        if (apertureType == ApertureType.Undefined)
+                            continue;
+
+                        List<Point3D> externalEdge_Aperture = aperture.ExternalEdgePoint3Ds(tolerance)?.ToList();
+                        if (externalEdge_Aperture == null || externalEdge_Aperture.Count == 0)
+                            continue;
+
+                        List<List<Point2D>> point2Ds_Apertures = null;
+                        switch (apertureType)
+                        {
+                            case ApertureType.Door:
+                                point2Ds_Apertures = doors;
+                                break;
+
+                            case ApertureType.Window:
+                                point2Ds_Apertures = windows;
+                                break;
+                        }
+
+                        if (point2Ds_Apertures == null)
+                            continue;
+
+                        if (plane == null)
+                            plane = panel.ReferencePlane(tolerance);
+
+                        if (plane == null)
                             break;
 
-                        case ApertureType.Window:
-                            point2Ds_Apertures = windows;
-                            break;
+                        point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert(x)));
                     }
 
-                    if (point2Ds_Apertures == null)
-                        continue;
-
-                    if (plane == null)
-                        plane = panel.ReferencePlane(tolerance);
-
-                    if (plane == null)
-                        break;
-
-                    point2Ds_Apertures.Add(externalEdge_Aperture.ConvertAll(x => plane.Convert(x)));
                 }
-
             }
+
 
             result += string.Format("{0} {1}\n", externalEdge.Count, string.Join(" ", externalEdge.ConvertAll(x => point3Ds.IndexOf(x) + 1)));
 
