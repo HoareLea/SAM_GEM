@@ -3,7 +3,6 @@ using SAM.Geometry.Planar;
 using SAM.Geometry.Spatial;
 using System.Collections.Generic;
 using System.Linq;
-using SAM.Geometry.Object.Spatial;
 using SAM.Geometry.GEM;
 
 
