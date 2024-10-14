@@ -3,6 +3,7 @@ using SAM.Core.Grasshopper;
 using SAM.Analytical.Grasshopper.GEM.Properties;
 using System;
 using SAM.Core;
+using System.Collections.Generic;
 
 namespace SAM.Analytical.GEM.Grasshopper
 {
@@ -16,7 +17,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.4";
+        public override string LatestComponentVersion => "1.0.5";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -28,7 +29,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// </summary>
         public SAMAnalyticalToGEM()
           : base("SAMAnalytical.ToGEM", "SAMAnalytical.ToGEM",
-              "Writes SAM objects to GEM file ",
+              "Writes SAM objects to GEM file",
               "SAM", "GEM")
         {
         }
@@ -51,6 +52,8 @@ namespace SAM.Analytical.GEM.Grasshopper
             index = inputParamManager.AddNumberParameter("_tolerance_", "_tolerance_", "Tolerance", GH_ParamAccess.item, Tolerance.Distance);
 
             inputParamManager.AddBooleanParameter("_includePerimeterData_", "_includePerimeterData_", "Include perimeter data in space name", GH_ParamAccess.item, false);
+
+            index = inputParamManager.AddParameter(new Analytical.Grasshopper.GooSpaceParam() { Optional = true }, "adjacentBuildingSpaces_", "adjacentBuildingSpaces_", "SAM Analytical Spaces for Adjacent Bulding Spaces", GH_ParamAccess.list);
 
             inputParamManager.AddBooleanParameter("_run_", "_run_", "Run, set to True to export GEM to given path", GH_ParamAccess.item, false);
         }
@@ -75,7 +78,7 @@ namespace SAM.Analytical.GEM.Grasshopper
             dataAccess.SetData(1, false);
 
             bool run = false;
-            if (!dataAccess.GetData(4, ref run))
+            if (!dataAccess.GetData(5, ref run))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
@@ -103,10 +106,16 @@ namespace SAM.Analytical.GEM.Grasshopper
             bool includePerimeterData = false;
             dataAccess.GetData(3, ref includePerimeterData);
 
+            List<Space> adjacentBuildingSpaces = new List<Space>();
+            if(!dataAccess.GetDataList(4, adjacentBuildingSpaces))
+            {
+                adjacentBuildingSpaces = null;
+            }
+
             string gEM = null;
             if (sAMObject is AnalyticalModel)
             {
-                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, includePerimeterData, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
+                gEM = Convert.ToGEM((AnalyticalModel)sAMObject, adjacentBuildingSpaces, includePerimeterData, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
             else if(sAMObject is BuildingModel)
             {

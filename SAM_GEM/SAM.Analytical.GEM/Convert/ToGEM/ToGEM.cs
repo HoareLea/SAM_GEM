@@ -10,7 +10,7 @@ namespace SAM.Analytical.GEM
 {
     public static partial class Convert
     {
-        public static string ToGEM(this AnalyticalModel analyticalModel, bool includePerimeterData = false, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
+        public static string ToGEM(this AnalyticalModel analyticalModel, IEnumerable<Space> adjacentBuildingSpaces = null, bool includePerimeterData = false, double silverSpacing = Tolerance.MacroDistance, double tolerance_Angle = Tolerance.Angle, double tolerance_Distance = Tolerance.Distance)
         {
             if(analyticalModel == null)
             {
@@ -109,10 +109,10 @@ namespace SAM.Analytical.GEM
                 }
             }
 
-            return ToGEM(adjacencyCluster, includePerimeterData, silverSpacing, tolerance_Distance);
+            return ToGEM(adjacencyCluster, adjacentBuildingSpaces, includePerimeterData, silverSpacing, tolerance_Distance);
         }
 
-        private static string ToGEM(this AdjacencyCluster adjacencyCluster, bool includePerimeterData = false, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
+        private static string ToGEM(this AdjacencyCluster adjacencyCluster, IEnumerable<Space> adjacentBuildingSpaces = null,  bool includePerimeterData = false, double silverSpacing = Tolerance.MacroDistance, double tolerance = Tolerance.Distance)
         {
             AdjacencyCluster adjacencyCluster_Temp = adjacencyCluster?.SplitByInternalEdges(tolerance);
             if (adjacencyCluster_Temp == null)
@@ -127,7 +127,9 @@ namespace SAM.Analytical.GEM
                 {
                     List<IPanel> panels = adjacencyCluster_Temp.UpdateNormals(space, false, true,false, silverSpacing, tolerance);
                     if (panels == null || panels.Count == 0)
+                    {
                         continue;
+                    }
 
                     string name = space.Name;
                     if (string.IsNullOrWhiteSpace(name))
@@ -139,7 +141,9 @@ namespace SAM.Analytical.GEM
                         name += isPermieter ? "_p" : "_i";
                     }
 
-                    string result_space = ToGEM(panels, name, GEMType.Space, tolerance);
+                    GEMType gEMType = adjacentBuildingSpaces?.ToList()?.Find(x => x.Guid == space.Guid) != null ? GEMType.AdjacentBuilding : GEMType.Space;
+
+                    string result_space = ToGEM(panels, name, gEMType, tolerance);
                     if (result_space == null)
                         continue;
 
@@ -192,16 +196,25 @@ namespace SAM.Analytical.GEM
                     colourRGB = 16711690;
                     colour = 1;
                     break;
+                case GEMType.AdjacentBuilding:
+                    layer = 62;
+                    colourRGB = 16711935;
+                    colour = 1;
+                    break;
                 default:
                     return null;
             }
             
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Layer(), layer);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Colour(), colour);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Category(), 1);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Type(), (int)gEMType);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), colourRGB);
-            result += string.Format("{0} {1}\n", Core.GEM.Query.ParameterName_Name(), name);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Layer, layer);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Colour, colour);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Category, 1);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Type, (int)gEMType);
+            if (gEMType == GEMType.AdjacentBuilding)
+            {
+                result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.SubType, 0);
+            }
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.ColourRGB, colourRGB);
+            result += string.Format("{0} {1}\n", Core.GEM.Variables.ParameterName.Name, name);
 
             List<Point3D> point3Ds =  panels?.ExternalEdgePoint3Ds(tolerance)?.ToList();
             if (point3Ds != null || point3Ds.Count > 2)
@@ -494,12 +507,12 @@ namespace SAM.Analytical.GEM
                     return null;
             }
 
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Layer(), layer);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Colour(), colour);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Category(), 1);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_Type(), (int)gEMType);
-            result += string.Format("{0}\n{1}\n", Core.GEM.Query.ParameterName_ColourRGB(), colourRGB);
-            result += string.Format("{0} {1}\n", Core.GEM.Query.ParameterName_Name(), name);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Layer, layer);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Colour, colour);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Category, 1);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.Type, (int)gEMType);
+            result += string.Format("{0}\n{1}\n", Core.GEM.Variables.ParameterName.ColourRGB, colourRGB);
+            result += string.Format("{0} {1}\n", Core.GEM.Variables.ParameterName.Name, name);
 
             List<Point3D> point3Ds = partitions?.ExternalEdgePoint3Ds(tolerance)?.ToList();
             if (point3Ds != null || point3Ds.Count > 2)
