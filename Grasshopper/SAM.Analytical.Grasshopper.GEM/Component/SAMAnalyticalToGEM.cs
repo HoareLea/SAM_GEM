@@ -1,4 +1,7 @@
-﻿using Grasshopper.Kernel;
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2020–2026 Michal Dengusiak & Jakub Ziolkowski and contributors
+
+using Grasshopper.Kernel;
 using SAM.Core.Grasshopper;
 using SAM.Analytical.Grasshopper.GEM.Properties;
 using System;
@@ -7,7 +10,7 @@ using System.Collections.Generic;
 
 namespace SAM.Analytical.GEM.Grasshopper
 {
-    public class SAMAnalyticalToGEM : GH_SAMComponent
+    public class SAMAnalyticalToGEM : GH_SAMVariableOutputParameterComponent
     {
         /// <summary>
         /// Gets the unique ID for this component. Do not change this ID after release.
@@ -17,7 +20,7 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.5";
+        public override string LatestComponentVersion => "1.0.6";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -37,34 +40,46 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_InputParamManager inputParamManager)
+        protected override GH_SAMParam[] Inputs
         {
-            string path = null;
+            get
+            {
+                List<GH_SAMParam> result = new List<GH_SAMParam>();
 
-            int index = -1;
+                result.Add(new GH_SAMParam(new global::Grasshopper.Kernel.Parameters.Param_GenericObject() { Name = "_analyticalModel", NickName = "_analyticalModel", Description = "SAM Analytical Model", Access = GH_ParamAccess.item }, ParamVisibility.Binding));
 
-            index = inputParamManager.AddParameter(new global::Grasshopper.Kernel.Parameters.Param_GenericObject(), "_analyticalModel", "_analyticalModel", "SAM Analytical Model", GH_ParamAccess.item);
-            //inputParamManager[index].DataMapping = GH_DataMapping.Flatten;
+result.Add(new GH_SAMParam(new global::Grasshopper.Kernel.Parameters.Param_String() { Name = "path_", NickName = "path_", Description = "GEM file path including extension .gem", Access = GH_ParamAccess.item, Optional = true }, ParamVisibility.Binding));
 
-            index = inputParamManager.AddTextParameter("path_", "path_", "GEM file path including extension .gem", GH_ParamAccess.item, path);
-            inputParamManager[index].Optional = true;
+                global::Grasshopper.Kernel.Parameters.Param_Number param_Number = new global::Grasshopper.Kernel.Parameters.Param_Number() { Name = "_tolerance_", NickName = "_tolerance_", Description = "Tolerance", Access = GH_ParamAccess.item };
+                param_Number.SetPersistentData(Tolerance.Distance);
+                result.Add(new GH_SAMParam(param_Number, ParamVisibility.Binding));
 
-            index = inputParamManager.AddNumberParameter("_tolerance_", "_tolerance_", "Tolerance", GH_ParamAccess.item, Tolerance.Distance);
+                global::Grasshopper.Kernel.Parameters.Param_Boolean param_includePerimeterData = new global::Grasshopper.Kernel.Parameters.Param_Boolean() { Name = "_includePerimeterData_", NickName = "_includePerimeterData_", Description = "Include perimeter data in space name", Access = GH_ParamAccess.item };
+                param_includePerimeterData.SetPersistentData(false);
+                result.Add(new GH_SAMParam(param_includePerimeterData, ParamVisibility.Binding));
 
-            inputParamManager.AddBooleanParameter("_includePerimeterData_", "_includePerimeterData_", "Include perimeter data in space name", GH_ParamAccess.item, false);
+                result.Add(new GH_SAMParam(new Analytical.Grasshopper.GooSpaceParam() { Name = "adjacentBuildingSpaces_", NickName = "adjacentBuildingSpaces_", Description = "SAM Analytical Spaces for Adjacent Bulding Spaces", Access = GH_ParamAccess.list, Optional = true }, ParamVisibility.Binding));
 
-            index = inputParamManager.AddParameter(new Analytical.Grasshopper.GooSpaceParam() { Optional = true }, "adjacentBuildingSpaces_", "adjacentBuildingSpaces_", "SAM Analytical Spaces for Adjacent Bulding Spaces", GH_ParamAccess.list);
+                global::Grasshopper.Kernel.Parameters.Param_Boolean param_run = new global::Grasshopper.Kernel.Parameters.Param_Boolean() { Name = "_run_", NickName = "_run_", Description = "Run, set to True to export GEM to given path", Access = GH_ParamAccess.item };
+                param_run.SetPersistentData(false);
+                result.Add(new GH_SAMParam(param_run, ParamVisibility.Binding));
 
-            inputParamManager.AddBooleanParameter("_run_", "_run_", "Run, set to True to export GEM to given path", GH_ParamAccess.item, false);
+                return result.ToArray();
+            }
         }
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_OutputParamManager outputParamManager)
+        protected override GH_SAMParam[] Outputs
         {
-            outputParamManager.AddTextParameter("GEM", "GEM", "GEM", GH_ParamAccess.list);
-            outputParamManager.AddBooleanParameter("Successful", "Successful", "Correctly imported?", GH_ParamAccess.item);
+            get
+            {
+                List<GH_SAMParam> result = new List<GH_SAMParam>();
+                result.Add(new GH_SAMParam(new global::Grasshopper.Kernel.Parameters.Param_String() { Name = "GEM", NickName = "GEM", Description = "GEM", Access = GH_ParamAccess.list }, ParamVisibility.Binding));
+                result.Add(new GH_SAMParam(new global::Grasshopper.Kernel.Parameters.Param_Boolean() { Name = "Successful", NickName = "Successful", Description = "Correctly imported?", Access = GH_ParamAccess.item }, ParamVisibility.Binding));
+                return result.ToArray();
+            }
         }
 
         /// <summary>
@@ -75,10 +90,17 @@ namespace SAM.Analytical.GEM.Grasshopper
         /// </param>
         protected override void SolveInstance(IGH_DataAccess dataAccess)
         {
-            dataAccess.SetData(1, false);
+            int index;
+
+            index = Params.IndexOfOutputParam("Successful");
+            if (index != -1)
+            {
+                dataAccess.SetData(index, false);
+            }
 
             bool run = false;
-            if (!dataAccess.GetData(5, ref run))
+            index = Params.IndexOfInputParam("_run_");
+            if (index == -1 || !dataAccess.GetData(index, ref run))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
@@ -87,27 +109,38 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
 
             SAMObject sAMObject = null;
-            if (!dataAccess.GetData(0, ref sAMObject) || sAMObject == null)
+            index = Params.IndexOfInputParam("_analyticalModel");
+            if (index == -1 || !dataAccess.GetData(index, ref sAMObject) || sAMObject == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
             }
 
             string path = null;
-            dataAccess.GetData(1, ref path);
+            index = Params.IndexOfInputParam("path_");
+            if (index != -1)
+            {
+                dataAccess.GetData(index, ref path);
+            }
 
             double tolerance = Tolerance.Distance;
-            if (!dataAccess.GetData(2, ref tolerance))
+            index = Params.IndexOfInputParam("_tolerance_");
+            if (index == -1 || !dataAccess.GetData(index, ref tolerance))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
             }
 
             bool includePerimeterData = false;
-            dataAccess.GetData(3, ref includePerimeterData);
+            index = Params.IndexOfInputParam("_includePerimeterData_");
+            if (index != -1)
+            {
+                dataAccess.GetData(index, ref includePerimeterData);
+            }
 
             List<Space> adjacentBuildingSpaces = new List<Space>();
-            if(!dataAccess.GetDataList(4, adjacentBuildingSpaces))
+            index = Params.IndexOfInputParam("adjacentBuildingSpaces_");
+            if (index == -1 || !dataAccess.GetDataList(index, adjacentBuildingSpaces))
             {
                 adjacentBuildingSpaces = null;
             }
@@ -117,7 +150,7 @@ namespace SAM.Analytical.GEM.Grasshopper
             {
                 gEM = Convert.ToGEM((AnalyticalModel)sAMObject, adjacentBuildingSpaces, includePerimeterData, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
-            else if(sAMObject is BuildingModel)
+            else if (sAMObject is BuildingModel)
             {
                 gEM = Convert.ToGEM((BuildingModel)sAMObject, Tolerance.MacroDistance, Tolerance.Distance, tolerance);
             }
@@ -127,7 +160,7 @@ namespace SAM.Analytical.GEM.Grasshopper
                 return;
             }
 
-            if(gEM == null)
+            if (gEM == null)
             {
                 gEM = string.Empty;
             }
@@ -135,8 +168,17 @@ namespace SAM.Analytical.GEM.Grasshopper
             if (!string.IsNullOrWhiteSpace(path))
                 System.IO.File.WriteAllText(path, gEM);
 
-            dataAccess.SetData(0, gEM);
-            dataAccess.SetData(1, true);
+            index = Params.IndexOfOutputParam("GEM");
+            if (index != -1)
+            {
+                dataAccess.SetData(index, gEM);
+            }
+
+            index = Params.IndexOfOutputParam("Successful");
+            if (index != -1)
+            {
+                dataAccess.SetData(index, true);
+            }
         }
     }
 }
